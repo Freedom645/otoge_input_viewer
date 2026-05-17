@@ -45,7 +45,7 @@ This tool is inspired from [dakendisplay tool](https://rag-oji.com/dakendisplay/
 |html/iidx_2p.html|700×400|IIDX 2P側|
 |html/iidx_dp.html|1400×400|IIDX DP|
 |html/sdvx.html|870×430|SDVX|
-|html/popn.html|1000×320|pop'n music (9ボタン)|
+|html/popn.html|650×320|pop'n music (9ボタン)|
 |html/stats_only.html|800×100|(リリース、密度、ノーツ数の数値のみ)|
 
 WebSocketのポート番号はデフォルトの8765で問題ないつもりですが、
