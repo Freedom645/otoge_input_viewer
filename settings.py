@@ -11,6 +11,7 @@ class playmode(Enum):
     iidx_sp=0
     iidx_dp=1
     sdvx=2
+    popn=3
 
     @classmethod
     def get_names(cls) -> list:

@@ -132,6 +132,8 @@ class JoystickWebSocketServer:
             msg += f" (key: {self.today_keys}, vol: {self.today_others})\n"
         elif self.settings.playmode in (playmode.iidx_sp, playmode.iidx_dp):
             msg += f" (key: {self.today_keys}, scratch: {self.today_others})\n"
+        elif self.settings.playmode == playmode.popn:
+            msg += "\n"
         msg += f"mode: {self.settings.playmode.name}\n"
         msg += f"uptime: {self.get_uptime()}\n#otoge_input_viewer\n"
         encoded_msg = urllib.parse.quote(f"{msg}")
@@ -467,6 +469,9 @@ class JoystickWebSocketServer:
             elif self.settings.playmode==playmode.sdvx:
                 if event.button >=1 and event.button<=6:
                     ret = True
+            elif self.settings.playmode==playmode.popn:
+                if 0 <= event.button <= 8:
+                    ret = True
         elif event.type == pygame.JOYAXISMOTION:
             if self.settings.playmode in (playmode.iidx_sp, playmode.iidx_dp):
                 if event.axis==0:
@@ -587,6 +592,8 @@ class JoystickWebSocketServer:
     def update_counter_display(self):
         if self.settings.playmode == playmode.sdvx:
             self.counter_label.config(text=f"notes: {self.today_notes} (key: {self.today_keys} + vol: {self.today_others})")
+        elif self.settings.playmode == playmode.popn:
+            self.counter_label.config(text=f"notes: {self.today_notes}")
         else: # 1p or 2p
             self.counter_label.config(text=f"notes: {self.today_notes} (key: {self.today_keys} + scr: {self.today_others})")
 
