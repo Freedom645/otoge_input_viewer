@@ -34,9 +34,11 @@ This tool is inspired from [dakendisplay tool](https://rag-oji.com/dakendisplay/
 - リリース速度計算のために直近何ノーツを用いるか
 - 譜面密度計算のために直近何秒のノーツを見るか
 - websocketで使うポート番号
+- アプリ終了時に打鍵数のツイート画面を開くかどうか
+- 終了時に打鍵数のログを保存するかどうか
 
 を設定することができます。  
-![image](https://github.com/user-attachments/assets/4cab31cc-6057-427f-8309-d940ca1f1ce3)
+<img width="353" alt="image" src="https://github.com/user-attachments/assets/669497d3-4b1a-4bf4-a9e7-995decbdb4dc" />
 
 同梱のHTMLファイルについては以下の通りとなっています。
 |ファイル名|推奨サイズ|内容|
@@ -46,11 +48,21 @@ This tool is inspired from [dakendisplay tool](https://rag-oji.com/dakendisplay/
 |html/iidx_dp.html|1400×400|IIDX DP|
 |html/sdvx.html|870×430|SDVX|
 |html/popn.html|650×320|pop'n music (9ボタン)|
+|html/iidx_1p_color.html|580×370|IIDX 1P側、リリースタイム色分け表示|
+|html/iidx_2p_color.html|580×370|IIDX 2P側、リリースタイム色分け表示|
+|html/iidx_dp_color.html|1200×370|IIDX DP、リリースタイム色分け表示|
+|html/sdvx_color.html|870×430|SDVX、リリースタイム色分け表示|
 |html/stats_only.html|800×100|(リリース、密度、ノーツ数の数値のみ)|
 
 WebSocketのポート番号はデフォルトの8765で問題ないつもりですが、
 もし上手く動かない場合(他のアプリが掴んでいる等)は、他のポートに変更してみてください。
 変更後はブラウザソースの再読み込みが必要です。(該当するブラウザソースをダブルクリックし、```現在のページのキャッシュを更新```をクリック)
+
+メニューバーの`key config`からキーコンフィグを手動で行うこともできます。  
+PHOENIX WANやFAUCE TWOではこの設定は不要ですが、  
+1鍵を押しているのに2鍵が光る、みたいなデバイスをお使いの方は手動登録をお試しください。
+<img width="631" alt="image" src="https://github.com/user-attachments/assets/3b639484-8862-449e-a990-55ceabcbf173" />
+
 
 また、本アプリの新バージョンがリリースされた際には、
 アプリ起動時にアップデート機能が動くようになっています。

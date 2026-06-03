@@ -1,0 +1,104 @@
+@font-face {
+    font-family: "DSEG14Classic";
+    src: url("DSEG14Classic-Bold.woff2") format("woff2");
+    font-weight: bold;
+    font-style: normal;
+    font-display: swap;
+}
+
+body {
+    background-color: rgba(0, 0, 0, 0);
+    margin: 0px auto;
+    overflow: hidden;
+}
+
+.background {
+    background-image: linear-gradient(rgba(0, 0, 0, 0.65), rgba(0, 0, 0, 0.65)), url(naoki.jpg);
+    padding-top: 28px;
+    padding-left: 18px;
+    box-sizing: border-box;
+}
+
+.top {
+    gap: 18px;
+}
+
+table.info {
+    width: calc(100% - 18px);
+    padding-top: 32px;
+    box-sizing: border-box;
+    table-layout: auto;
+}
+
+.btn {
+    width: 50px;
+    height: 85px;
+}
+
+:root {
+    --font-size-notes: 40px;
+    --scratch-right-lr2-mode: 0;
+    /* 鍵盤やスクラッチなどで使う共通の枠線 */
+    --border-common: #fee solid 5px;
+    /* 鍵盤ごとリリース速度表示のon/off */
+    --disp-release-each-key: 1;
+    --disp-release-eachkey: var(--disp-release-each-key);
+    /* 鍵盤を押していないときの背景色 */
+    --bg-off: rgba(0, 0, 0, 0.35);
+    --bg-keys-off: var(--bg-off);
+    --bg-scratch-off: var(0, 0, 0, 0.98);
+    /* 鍵盤を押した時のエフェクトで使う内側の色 */
+    --bg-on-inner: rgba(255, 255, 255, 0.55);
+    /* 鍵盤を押した時のエフェクトで使うメインの色 */
+    --bg-on-main: rgba(170, 221, 255, 0.95);
+    /* 鍵盤を押した時のエフェクトで使うサブの色(SDVXのFXとか右つまみとかで使用) */
+    --bg-on-sub: rgba(255, 34, 120, 0.55);
+
+    /* ***鍵盤ごとの個別リリース関連設定*** */
+    /* リリース値小～中の境界値 */
+    --threshold-release-low: 65.0;
+    /* リリース値中～大の境界値 */
+    --threshold-release-high: 80.0;
+    --outline-release-width: 8px;
+    --color-release-eachkey-low: #2a7;
+    --color-release-eachkey-mid: #aa7;
+    --color-release-eachkey-high: #a22;
+    --release-eachkey-int: 1;
+    /* ノーツ数の色を変更 */
+    --color-notes: #ff0;
+}
+
+table.info td:nth-child(4) {
+    padding-right: 8px;
+}
+
+table.info td:nth-child(2) {
+    padding-right: 0;
+}
+
+table.info td:nth-child(5) {
+    text-align: right;
+    width: 6ch;
+}
+
+/* 統計情報のフォントを変更 */
+release {
+    width: 3.4ch;
+    font-family: "DSEG14Classic";
+    font-weight: bold;
+}
+
+notes {
+    display: inline-block;
+    width: 6ch;
+    font-family: "DSEG14Classic";
+    font-weight: bold;
+    text-align: right;
+    white-space: nowrap;
+}
+
+density {
+    width: 4ch;
+    font-family: "DSEG14Classic";
+    font-weight: bold;
+}
