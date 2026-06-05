@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <title>Otoge Input Viewer(pop'n レーン)</title>
+    <link rel="stylesheet" type="text/css" href="property.css" />
+    <link rel="stylesheet" type="text/css" href="lane.css" />
+    <link rel="stylesheet" type="text/css" href="websocket.css" /> <!-- websocketのポートを変更する場合はここに書く。cssが存在しない場合はデフォ(8765) -->
+</head>
+<body>
+    <warning>Not Connected!!</warning>
+    <div class="background">
+        <!-- レーンはlane.jsがLANE_CONFIGから生成する -->
+        <div class="lanes"></div>
+        <table class="info">
+            <tr>
+                <td><release></release></td><td>ms</td>
+                <td><density></density></td><td>n/s</td>
+                <td><notes></notes></td>
+            </tr>
+        </table>
+    </div>
+
+    <script>
+        // 左から9レーン: 白 黄 緑 青 赤 青 緑 黄 白
+        window.LANE_CONFIG = {
+            scratchTimeout: 120,
+            lanes: [
+                { key: 'k0_0', kind: 'key', colorVar: '--note-popn-white' },
+                { key: 'k0_1', kind: 'key', colorVar: '--note-popn-yellow' },
+                { key: 'k0_2', kind: 'key', colorVar: '--note-popn-green' },
+                { key: 'k0_3', kind: 'key', colorVar: '--note-popn-blue' },
+                { key: 'k0_4', kind: 'key', colorVar: '--note-popn-red' },
+                { key: 'k0_5', kind: 'key', colorVar: '--note-popn-blue' },
+                { key: 'k0_6', kind: 'key', colorVar: '--note-popn-green' },
+                { key: 'k0_7', kind: 'key', colorVar: '--note-popn-yellow' },
+                { key: 'k0_8', kind: 'key', colorVar: '--note-popn-white' }
+            ]
+        };
+    </script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="lane.js"></script>
+</body>
+</html>

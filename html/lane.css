@@ -1,0 +1,185 @@
+@charset "UTF-8";
+/* レーン型(ロングノーツ風)表示用の共通スタイル */
+:root {
+    /* ===== レーンのサイズ ===== */
+    /* 通常レーン(鍵盤)の幅 */
+    --lane-key-width: 60px;
+    /* 皿レーンの幅 */
+    --lane-scratch-width: 90px;
+    /* レーン同士の間隔 */
+    --lane-gap: 6px;
+    /* DP中央など、左右を分けるスペーサーの幅 */
+    --lane-center-gap: 40px;
+    /* ノーツが流れる縦の長さ(判定ラインまでの高さ) */
+    --lane-height: 480px;
+
+    /* ===== アニメーション ===== */
+    /* ノーツが上から下へ流れる速度(px/秒)。譜面の高速/低速はここで調整 */
+    --note-scroll-speed: 600;
+
+    /* ===== 判定ライン ===== */
+    /* 判定ラインの色 */
+    --judgment-line-color: rgba(255, 255, 255, 0.9);
+    /* 判定ラインの太さ */
+    --judgment-line-height: 4px;
+
+    /* ===== レーン背景 ===== */
+    /* レーンの背景色(未入力時) */
+    --lane-bg: rgba(255, 255, 255, 0.04);
+    /* レーンの枠線 */
+    --lane-border: rgba(255, 255, 255, 0.15) solid 1px;
+
+    /* ===== ノーツの色(実機に近い配色) ===== */
+    /* IIDX 白鍵ノーツ */
+    --note-iidx-white: rgba(245, 245, 245, 0.98);
+    /* IIDX 黒鍵ノーツ */
+    --note-iidx-black: rgba(70, 150, 255, 0.98);
+    /* IIDX 皿ノーツ */
+    --note-iidx-scratch: rgba(255, 70, 70, 0.98);
+    /* pop'n 各色(popn.cssと同じ系統) */
+    --note-popn-white: rgba(240, 240, 240, 0.98);
+    --note-popn-yellow: rgba(255, 221, 51, 0.98);
+    --note-popn-green: rgba(76, 200, 76, 0.98);
+    --note-popn-blue: rgba(70, 135, 255, 0.98);
+    --note-popn-red: rgba(255, 70, 70, 0.98);
+}
+
+html {
+    height: 100%;
+}
+
+body {
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.99);
+    margin: 0;
+    padding: 0;
+    font-family: 'RocknRoll One', sans-serif;
+    color: #fff;
+    font-size: 2px;
+}
+
+.background {
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    background-size: 100% 100%;
+    background-position: left top;
+    background-repeat: no-repeat;
+    margin: 0;
+    padding: 30px;
+    box-sizing: border-box;
+}
+
+/* レーン全体の並び(左から右へ) */
+.lanes {
+    display: flex;
+    gap: var(--lane-gap);
+    align-items: flex-end;
+    justify-content: center;
+}
+
+/* 1レーン */
+.lane {
+    position: relative;
+    width: var(--lane-key-width);
+    height: var(--lane-height);
+    background: var(--lane-bg);
+    border: var(--lane-border);
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+/* 皿レーンは少し幅広 */
+.lane.scratch {
+    width: var(--lane-scratch-width);
+}
+
+/* レーン間の余白(DP中央など)。flexのgap分を差し引いた幅にする */
+.lane-spacer {
+    width: calc(var(--lane-center-gap) - 2 * var(--lane-gap));
+    flex: 0 0 auto;
+}
+
+/* 判定ライン(各レーン下端) */
+.lane::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: var(--judgment-line-height);
+    background: var(--judgment-line-color);
+    box-shadow: 0 0 8px var(--judgment-line-color);
+    z-index: 3;
+}
+
+/* 入力に応じて上から下へ流れるノーツ(ロングノーツ風)。
+   top / height はlane.jsが毎フレーム更新する */
+.note {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    height: 0;
+    /* 先頭(下端)を少し明るくしてロングノーツらしく(color-mixはOBS未対応のため使わない) */
+    background:
+        linear-gradient(to bottom, rgba(255, 255, 255, 0) 70%, rgba(255, 255, 255, 0.4) 100%),
+        var(--note-color);
+    box-shadow: 0 0 12px var(--note-color),
+        0 0 24px var(--note-color);
+    border-radius: 0 0 3px 3px;
+    z-index: 2;
+    will-change: top, height;
+}
+
+/* 数値表示(リリース速度/密度/ノーツ数) */
+table.info {
+    margin: 24px auto 0;
+    text-align: left;
+    font-size: 32px;
+    border-spacing: 0;
+    line-height: 2px;
+    text-shadow: 2px 2px 0 #000,
+        -2px 2px 0 #000,
+        2px -2px 0 #000,
+        -2px -2px 0 #000;
+}
+
+table.info td:nth-child(2) {
+    text-align: right;
+    padding-right: 4px;
+}
+
+table.info td:nth-child(4) {
+    padding-right: 40px;
+}
+
+warning {
+    font-size: 120px;
+    color: red;
+}
+
+release {
+    display: inline-block;
+    width: 5ch;
+    font-size: var(--font-size-release-total);
+    color: var(--color-release-total);
+    text-align: right;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+}
+
+density {
+    display: inline-block;
+    width: 5ch;
+    font-size: var(--font-size-density);
+    color: var(--color-density);
+    text-align: right;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+}
+
+notes {
+    font-size: var(--font-size-notes);
+    color: var(--color-notes);
+    font-variant-numeric: tabular-nums;
+}

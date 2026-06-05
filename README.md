@@ -53,6 +53,16 @@ This tool is inspired from [dakendisplay tool](https://rag-oji.com/dakendisplay/
 |html/iidx_dp_color.html|1200×370|IIDX DP、リリースタイム色分け表示|
 |html/sdvx_color.html|870×430|SDVX、リリースタイム色分け表示|
 |html/stats_only.html|800×100|(リリース、密度、ノーツ数の数値のみ)|
+|html/iidx_1p_lane.html|640×620|IIDX 1P、レーン型(ロングノーツ風)表示|
+|html/iidx_2p_lane.html|640×620|IIDX 2P、レーン型(ロングノーツ風)表示|
+|html/iidx_dp_lane.html|1200×620|IIDX DP、レーン型(ロングノーツ風)表示|
+|html/popn_lane.html|760×620|pop'n music、レーン型(ロングノーツ風)表示|
+
+レーン型表示は、各音ゲーのプレイ画面のレーン配置を模し、
+入力に応じて実際の譜面のようにノーツが上から下へ流れます。
+押している間はロングノーツが伸び続けながら流れ、離すとその時点で生成が止まり、
+生成済みの部分がそのまま下へ流れて判定ライン(下端)を通過して消えます。
+レーンの幅・高さ・ノーツの流れる速度・配色などは`html/lane.css`内のCSS変数で調整できます。
 
 WebSocketのポート番号はデフォルトの8765で問題ないつもりですが、
 もし上手く動かない場合(他のアプリが掴んでいる等)は、他のポートに変更してみてください。

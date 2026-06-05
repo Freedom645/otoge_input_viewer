@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <title>Otoge Input Viewer(IIDX 2P レーン)</title>
+    <link rel="stylesheet" type="text/css" href="property.css" />
+    <link rel="stylesheet" type="text/css" href="lane.css" />
+    <link rel="stylesheet" type="text/css" href="websocket.css" /> <!-- websocketのポートを変更する場合はここに書く。cssが存在しない場合はデフォ(8765) -->
+</head>
+<body>
+    <warning>Not Connected!!</warning>
+    <div class="background">
+        <!-- レーンはlane.jsがLANE_CONFIGから生成する -->
+        <div class="lanes"></div>
+        <table class="info">
+            <tr>
+                <td><release></release></td><td>ms</td>
+                <td><density></density></td><td>n/s</td>
+                <td><notes></notes></td>
+            </tr>
+        </table>
+    </div>
+
+    <script>
+        // 左から: 1, 2, 3, 4, 5, 6, 7, 皿 (2Pは皿が右)
+        window.LANE_CONFIG = {
+            scratchTimeout: 120,
+            lanes: [
+                { key: 'k0_0', kind: 'key',     colorVar: '--note-iidx-white' },
+                { key: 'k0_1', kind: 'key',     colorVar: '--note-iidx-black' },
+                { key: 'k0_2', kind: 'key',     colorVar: '--note-iidx-white' },
+                { key: 'k0_3', kind: 'key',     colorVar: '--note-iidx-black' },
+                { key: 'k0_4', kind: 'key',     colorVar: '--note-iidx-white' },
+                { key: 'k0_5', kind: 'key',     colorVar: '--note-iidx-black' },
+                { key: 'k0_6', kind: 'key',     colorVar: '--note-iidx-white' },
+                { key: 's0',   kind: 'scratch', colorVar: '--note-iidx-scratch' }
+            ]
+        };
+    </script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="lane.js"></script>
+</body>
+</html>
