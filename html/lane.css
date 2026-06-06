@@ -16,6 +16,10 @@
     /* ===== アニメーション ===== */
     /* ノーツが上から下へ流れる速度(px/秒)。譜面の高速/低速はここで調整 */
     --note-scroll-speed: 600;
+    /* ノーツ始点(先頭)の長さ。この範囲だけ元の明るい色のまま表示する */
+    --note-head-height: 16px;
+    /* 長押し部分(始点より上)に重ねる暗さ。値が大きいほど暗くなる */
+    --note-body-dim: rgba(0, 0, 0, 0.5);
 
     /* ===== 判定ライン ===== */
     /* 判定ラインの色 */
@@ -120,9 +124,16 @@ body {
     right: 0;
     top: 0;
     height: 0;
-    /* 先頭(下端)を少し明るくしてロングノーツらしく(color-mixはOBS未対応のため使わない) */
+    /* 始点(下端)は元の明るい色のまま、長押し部分は黒を重ねて暗くする
+       (color-mixはOBS未対応のため、黒のグラデーション重ねで実現) */
     background:
-        linear-gradient(to bottom, rgba(255, 255, 255, 0) 70%, rgba(255, 255, 255, 0.4) 100%),
+        /* 先頭の白いハイライト */
+        linear-gradient(to top, rgba(255, 255, 255, 0.4) 0, rgba(255, 255, 255, 0) 10px),
+        /* 始点より上(長押し部分)を暗くする。下端の始点ぶんは透明のまま */
+        linear-gradient(to top,
+            rgba(0, 0, 0, 0) 0,
+            rgba(0, 0, 0, 0) var(--note-head-height),
+            var(--note-body-dim) var(--note-head-height)),
         var(--note-color);
     box-shadow: 0 0 12px var(--note-color),
         0 0 24px var(--note-color);

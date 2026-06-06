@@ -43,7 +43,8 @@
                 kind: def.kind,
                 notes: [],       // このレーンを流れているノーツ群
                 activeNote: null,// 押下中(末尾を生成し続けている)ノーツ
-                lastSeen: 0
+                lastSeen: 0,
+                lastDir: -1      // 皿の直前の回転方向(反転検出用)
             };
         });
     }
@@ -90,9 +91,10 @@
                     if (note.el.parentNode) note.el.parentNode.removeChild(note.el);
                     continue;
                 }
-                var renderBottom = yBottom < H ? yBottom : H; // レーン外は描画しない
+                // 始点(下端)が判定ライン下へ抜けるとレーンのoverflow:hiddenで
+                // 自動的に隠れる(=長押し中は暗い帯だけが残る)ため高さは丸めない
                 note.el.style.top = yTop + 'px';
-                note.el.style.height = (renderBottom - yTop) + 'px';
+                note.el.style.height = (yBottom - yTop) + 'px';
                 kept.push(note);
             }
             lane.notes = kept;
@@ -138,6 +140,16 @@
                     else releaseLane(key, now);
                 } else if (e.type === 'axis') {
                     var s = 's' + (e.controller_side || 0);
+                    var scr = lanes[s];
+                    var dir = e.direction; // 0/1が回転方向(初回のみ-1)
+                    if (scr && dir !== -1 && dir !== undefined) {
+                        // 回転方向が反転したら、その境目に始点(明るい先頭)を出すため
+                        // 現在のノーツを一旦切って新しいノーツを開始する
+                        if (scr.activeNote && scr.lastDir !== -1 && scr.lastDir !== dir) {
+                            releaseLane(s, now);
+                        }
+                        scr.lastDir = dir;
+                    }
                     pressLane(s, now); // 皿は動いている間だけ押下扱い
                 } else if (e.type === 'release') {
                     $('release').html(e.value);
