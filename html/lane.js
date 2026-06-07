@@ -5,7 +5,7 @@
 //   lanes: [ { key:'s0', kind:'scratch', colorVar:'--note-iidx-scratch' },
 //            { key:'k0_0', kind:'key',     colorVar:'--note-iidx-white' }, ... ],
 //   scratchTimeout: 120,          // 皿がこのms間動かなければノーツを離す
-//   scratchReverseDebounce: 50    // 反転がこのms継続して初めて始点を描く(ノイズ抑制)
+//   scratchReverseDebounce: 40    // 反転がこのms継続して初めて始点を描く(ノイズ抑制)
 // }
 (function () {
   "use strict";
@@ -14,8 +14,10 @@
   var scratchTimeout = config.scratchTimeout || 120;
   // 皿の回転方向が反転しても、瞬間的なノイズ(ジッタ/エンコーダ折り返し)では
   // 始点を描かず、この時間継続して反転した場合のみ新しい始点を描く。
+  // 既定40msはBPM180の24分音符間隔(約55.6ms)より小さく、24分の往復でも
+  // 各反転を拾える値(40ms未満の単発ノイズは抑制)。
   var scratchReverseDebounce =
-    config.scratchReverseDebounce != null ? config.scratchReverseDebounce : 50;
+    config.scratchReverseDebounce != null ? config.scratchReverseDebounce : 40;
 
   var ws = null;
   var lanes = {}; // key -> { el, kind, activeNote, startTime, lastSeen }
