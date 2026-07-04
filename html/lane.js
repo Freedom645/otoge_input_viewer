@@ -5,19 +5,17 @@
 //   lanes: [ { key:'s0', kind:'scratch', colorVar:'--note-iidx-scratch' },
 //            { key:'k0_0', kind:'key',     colorVar:'--note-iidx-white' }, ... ],
 //   scratchTimeout: 120,          // 皿がこのms間動かなければノーツを離す
-//   scratchReverseDebounce: 40    // 反転がこのms継続して初めて始点を描く(ノイズ抑制)
 // }
+//
+// 皿(スクラッチ)は「前方回転 / 後方回転 / 静止」の3状態しか持たない。
+// サーバは値が変化した瞬間だけ axis イベント(direction=1:前方, 0:後方)を送り、
+// 静止はイベントが途絶えることで表現される。閾値による反転抑制は行わず、
+// 反転を検知した瞬間にノーツを切って新しい始点を描く(iidx_2p.htmlと同じ挙動)。
 (function () {
   "use strict";
 
   var config = window.LANE_CONFIG || { lanes: [], scratchTimeout: 120 };
   var scratchTimeout = config.scratchTimeout || 120;
-  // 皿の回転方向が反転しても、瞬間的なノイズ(ジッタ/エンコーダ折り返し)では
-  // 始点を描かず、この時間継続して反転した場合のみ新しい始点を描く。
-  // 既定40msはBPM180の24分音符間隔(約55.6ms)より小さく、24分の往復でも
-  // 各反転を拾える値(40ms未満の単発ノイズは抑制)。
-  var scratchReverseDebounce =
-    config.scratchReverseDebounce != null ? config.scratchReverseDebounce : 40;
 
   var ws = null;
   var lanes = {}; // key -> { el, kind, activeNote, startTime, lastSeen }
@@ -52,9 +50,7 @@
         notes: [], // このレーンを流れているノーツ群
         activeNote: null, // 押下中(末尾を生成し続けている)ノーツ
         lastSeen: 0,
-        lastDir: -1, // 確定している皿の回転方向
-        pendingDir: -1, // 反転候補の方向
-        pendingSince: 0, // その候補が続き始めた時刻
+        lastDir: -1, // 直近に確定した皿の回転方向(1:前方, 0:後方, -1:未確定/静止)
       };
     });
   }
@@ -121,6 +117,7 @@
       if (lane.kind !== "scratch") continue;
       if (lane.activeNote && now - lane.lastSeen > scratchTimeout) {
         releaseLane(key, now);
+        lane.lastDir = -1; // 静止 → 回転方向は未確定に戻す
       }
     }
   }
@@ -152,29 +149,23 @@
         } else if (e.type === "axis") {
           var s = "s" + (e.controller_side || 0);
           var scr = lanes[s];
-          var dir = e.direction; // 0/1が回転方向(初回のみ-1)
-          if (scr && dir !== -1 && dir !== undefined) {
-            if (!scr.activeNote || scr.lastDir === -1) {
-              // 皿を回し始めた1本目。方向を確定するだけ(始点は通常生成)
-              scr.lastDir = dir;
-              scr.pendingDir = dir;
-            } else if (dir === scr.lastDir) {
-              // 同一方向に回し続けている → 始点を新たに描かない
-              scr.pendingDir = dir;
-            } else {
-              // 反転候補。一定時間継続したときだけ境目に始点を描く
-              if (scr.pendingDir !== dir) {
-                scr.pendingDir = dir;
-                scr.pendingSince = now;
-              }
-              if (now - scr.pendingSince >= scratchReverseDebounce) {
-                releaseLane(s, now); // 現在のノーツを切り
-                pressLane(s, now); // 新しい始点を描く
-                scr.lastDir = dir;
-              }
+          if (scr) {
+            var dir = e.direction; // 1:前方回転, 0:後方回転, -1:方向不明(値変化なし/初回)
+            // 回転方向が確定していて、既存ノーツと逆向きに変わった瞬間だけ
+            // ノーツを切って境目に新しい始点を描く(閾値なし=3状態に忠実)。
+            if (
+              dir !== -1 &&
+              dir !== undefined &&
+              scr.activeNote &&
+              scr.lastDir !== -1 &&
+              dir !== scr.lastDir
+            ) {
+              releaseLane(s, now);
             }
+            // 皿が動いている間は押下扱い(始点が無ければ生成し、末尾を伸ばし続ける)。
+            pressLane(s, now);
+            if (dir !== -1 && dir !== undefined) scr.lastDir = dir;
           }
-          pressLane(s, now); // 皿は動いている間だけ押下扱い(末尾を生成)
         } else if (e.type === "release") {
           $("release").html(e.value);
         } else if (e.type === "density") {
