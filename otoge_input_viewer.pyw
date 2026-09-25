@@ -23,6 +23,7 @@ from src.key_config import (
 )
 from src.update import GitHubUpdater
 from src.count_history import CountHistory
+from src import web_server
 import traceback
 import urllib
 import webbrowser
@@ -31,6 +32,7 @@ from PySide6.QtGui import QAction, QIcon
 from PySide6.QtWidgets import (
     QApplication,
     QGridLayout,
+    QHBoxLayout,
     QLabel,
     QMainWindow,
     QMessageBox,
@@ -296,6 +298,17 @@ class JoystickWebSocketServer(QMainWindow):
         # サーバー状態表示
         self.server_status = QLabel(f"WebSocket port: {self.settings.port}")
         layout.addWidget(self.server_status, alignment=Qt.AlignLeft)
+
+        # ブラウザソース用URL表示
+        url_layout = QHBoxLayout()
+        self.page_url_label = QLabel("")
+        self.page_url_label.setTextInteractionFlags(Qt.TextSelectableByMouse)
+        url_layout.addWidget(self.page_url_label)
+        open_index_btn = QPushButton("ページ一覧を開く")
+        open_index_btn.clicked.connect(lambda: webbrowser.open(self.page_index_url()))
+        url_layout.addWidget(open_index_btn)
+        url_layout.addStretch()
+        layout.addLayout(url_layout)
 
         # uptime表示
         self.uptime_label = QLabel(f"uptime: 00:00:00")
@@ -1077,10 +1090,6 @@ class JoystickWebSocketServer(QMainWindow):
                         self.clients.remove(client)
             await asyncio.sleep(0.001)  # 送信間隔調整
 
-    async def main_server(self):
-        async with websockets.serve(self.websocket_handler, "0.0.0.0", 8765):
-            await self.send_joystick_events()
-
     def run_websocket_server(self):
         asyncio.set_event_loop(asyncio.new_event_loop())
         self.loop = asyncio.get_event_loop()
@@ -1091,7 +1100,14 @@ class JoystickWebSocketServer(QMainWindow):
         self.server_status.setText(
             f"WebSocket: {status_text} (ポート: {self.settings.port})"
         )
+        self.page_url_label.setText(f"URL: {self.page_index_url()}")
         self.mode_label.setText(f"mode: {self.settings.playmode.name}")
+
+    def page_index_url(self):
+        """ブラウザソース用ページ一覧のURL(LAN側IPがあればそれを使う)"""
+        addresses = web_server.get_lan_addresses()
+        host = addresses[0] if addresses else "localhost"
+        return f"http://{host}:{self.settings.port}/"
 
     def load_settings(self):
         if os.path.exists(self.CONFIG_FILE):
@@ -1104,7 +1120,10 @@ class JoystickWebSocketServer(QMainWindow):
 
     async def main_server(self):
         async with websockets.serve(
-            self.websocket_handler, "0.0.0.0", self.settings.port
+            self.websocket_handler,
+            "0.0.0.0",
+            self.settings.port,
+            process_request=web_server.process_request,
         ):
             await self.send_joystick_events()
 

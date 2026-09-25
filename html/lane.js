@@ -172,11 +172,17 @@
   // ===== WebSocket =====
   function open() {
     if (ws != null) return;
-    var host = rootStyle.getPropertyValue("--host").trim().replace(/['"]/g, "");
-    var port = rootStyle.getPropertyValue("--port").trim();
-    var url = "ws://" + host + ":" + port;
-    console.log("WebSocket URL: " + url);
-    ws = new WebSocket(url);
+    try {
+      var url = oivWebSocketUrl();
+      console.log("WebSocket URL: " + url);
+      ws = new WebSocket(url);
+    } catch (e) {
+      // URL不正などで例外になるとoncloseが呼ばれず再接続されないため、ここで再試行する
+      console.error(e);
+      ws = null;
+      setTimeout(open, 3000);
+      return;
+    }
     ws.onmessage = onMessage;
     ws.onclose = onClose;
   }

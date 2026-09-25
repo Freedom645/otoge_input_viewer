@@ -6,6 +6,7 @@
     <link rel="stylesheet" type="text/css" href="sdvx.css" />
     <link rel="stylesheet" type="text/css" href="sdvx_color.css" />
     <link rel="stylesheet" type="text/css" href="websocket.css" /> <!-- websocketのポートを変更する場合はここに書く。cssが存在しない場合はデフォ(8765) -->
+    <script src="connection.js"></script>
 </head>
 <body>
     <!-- getElementByIdのために先にHTMLを書いておく必要がある -->
@@ -92,11 +93,17 @@
         }
         function open() {
             if (ws == null){
-                var host = getComputedStyle(document.documentElement).getPropertyValue('--host').trim().replace(/['"]/g, '');
-                var port = getComputedStyle(document.documentElement).getPropertyValue('--port').trim();
-                var ws_url = 'ws://' + host + ':' + port
-                console.log("WebSocket URL: "+ws_url)
-                ws = new WebSocket(ws_url);
+                try {
+                    var ws_url = oivWebSocketUrl();
+                    console.log("WebSocket URL: "+ws_url)
+                    ws = new WebSocket(ws_url);
+                } catch (e) {
+                    // URL不正などで例外になるとoncloseが呼ばれず再接続されないため、ここで再試行する
+                    console.error(e);
+                    ws = null;
+                    setTimeout(open, 3000);
+                    return;
+                }
                 ws.onmessage = onMessage;
                 ws.onclose = onClose;
                 //ws.onerror = onError;
