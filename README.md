@@ -29,7 +29,7 @@ This tool is inspired from [dakendisplay tool](https://rag-oji.com/dakendisplay/
 <img src="https://github.com/user-attachments/assets/27b4b07c-6d40-4563-98ec-afd8907c171e" width=500px>  
 
 設定画面では、
-- コントローラの種別(IIDX, SDVX)
+- コントローラの種別(IIDX, SDVX, pop'n)
 - それ以上長い入力をロングノーツとみなすためのしきい値
 - リリース速度計算のために直近何ノーツを用いるか
 - 譜面密度計算のために直近何秒のノーツを見るか
@@ -47,6 +47,7 @@ This tool is inspired from [dakendisplay tool](https://rag-oji.com/dakendisplay/
 |html/iidx_2p.html|700×400|IIDX 2P側|
 |html/iidx_dp.html|1400×400|IIDX DP|
 |html/sdvx.html|870×430|SDVX|
+|html/popn.html|650×320|pop'n music (9ボタン)|
 |html/iidx_1p_color.html|580×370|IIDX 1P側、リリースタイム色分け表示|
 |html/iidx_2p_color.html|580×370|IIDX 2P側、リリースタイム色分け表示|
 |html/iidx_dp_color.html|1200×370|IIDX DP、リリースタイム色分け表示|

@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <title>Otoge Input Viewer(pop'n)</title>
+    <link rel="stylesheet" type="text/css" href="property.css" />
+    <link rel="stylesheet" type="text/css" href="popn.css" />
+    <link rel="stylesheet" type="text/css" href="websocket.css" /> <!-- websocketのポートを変更する場合はここに書く。cssが存在しない場合はデフォ(8765) -->
+</head>
+<body>
+    <!-- getElementByIdのために先にHTMLを書いておく必要がある -->
+    <div id="eventLog"></div>
+
+    <warning>Not Connected!!</warning>
+    <div class="background">
+        <div class="top">
+            <div class="grid-keys">
+                <!-- 上段: 2,4,6,8 (黄,青,青,黄) / 下段: 1,3,5,7,9 (白,緑,赤,緑,白) -->
+                <div id="btn1" class="btn white"></div>
+                <div id="btn2" class="btn yellow"></div>
+                <div id="btn3" class="btn green"></div>
+                <div id="btn4" class="btn blue"></div>
+                <div id="btn5" class="btn red"></div>
+                <div id="btn6" class="btn blue"></div>
+                <div id="btn7" class="btn green"></div>
+                <div id="btn8" class="btn yellow"></div>
+                <div id="btn9" class="btn white"></div>
+            </div>
+        </div>
+        <div>
+            <table class="info">
+                <tr>
+                    <td><release></release></td><td>ms</td>
+                    <td><density></density></td><td>n/s</td>
+                    <td><notes></notes></td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script>
+        var ws = null;
+        const eventLog = document.getElementById('eventLog')
+        var last_release = [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1]; // btn1～btn9用 (idx0未使用)
+
+        function init() {
+            open();
+        }
+        function open() {
+            if (ws == null){
+                var host = getComputedStyle(document.documentElement).getPropertyValue('--host').trim().replace(/['"]/g, '');
+                var port = getComputedStyle(document.documentElement).getPropertyValue('--port').trim();
+                var ws_url = 'ws://' + host + ':' + port
+                console.log("WebSocket URL: "+ws_url)
+                ws = new WebSocket(ws_url);
+                ws.onmessage = onMessage;
+                ws.onclose = onClose;
+            }
+        }
+
+        function getPressColor(btnElem) {
+            // 各.btnは--press-colorをCSSで保持
+            return getComputedStyle(btnElem).getPropertyValue('--press-color').trim();
+        }
+
+        function onMessage(event) {
+            var bg_keys_off = getComputedStyle(document.documentElement).getPropertyValue('--bg-keys-off').trim();
+            var bg_on_inner = getComputedStyle(document.documentElement).getPropertyValue('--bg-on-inner').trim();
+            var threshold_release_low = Number(getComputedStyle(document.documentElement).getPropertyValue('--threshold-release-low').trim());
+            var threshold_release_high = Number(getComputedStyle(document.documentElement).getPropertyValue('--threshold-release-high').trim());
+            var outline_release_low = getComputedStyle(document.documentElement).getPropertyValue('--outline-release-low').trim();
+            var outline_release_mid = getComputedStyle(document.documentElement).getPropertyValue('--outline-release-mid').trim();
+            var outline_release_high = getComputedStyle(document.documentElement).getPropertyValue('--outline-release-high').trim();
+            var color_release_eachkey_low = getComputedStyle(document.documentElement).getPropertyValue('--color-release-eachkey-low').trim();
+            var color_release_eachkey_mid = getComputedStyle(document.documentElement).getPropertyValue('--color-release-eachkey-mid').trim();
+            var color_release_eachkey_high = getComputedStyle(document.documentElement).getPropertyValue('--color-release-eachkey-high').trim();
+            var disp_release_each_key = getComputedStyle(document.documentElement).getPropertyValue('--disp-release-eachkey').trim();
+            var release_eachkey_int = getComputedStyle(document.documentElement).getPropertyValue('--release-eachkey-int').trim();
+            try {
+                const events = JSON.parse(event.data)
+
+                // 単一イベントと配列の両方に対応
+                const processedEvents = Array.isArray(events) ? events : [events];
+                processedEvents.forEach(e => {
+                  $('warning').html('');
+                  if (e.type == 'button'){ //// 鍵盤
+                    var btn = e.button+1
+                    var elem = document.getElementById('btn'+btn)
+                    if (!elem) return;
+                    var press_color = getPressColor(elem)
+                    if (e.state == 'down'){
+                        var pushed = "0 0 10px "+bg_on_inner+", 0 0 10px "+bg_on_inner+", 0 0 20px "+bg_on_inner
+                        pushed += ', 0 0 40px ' + press_color
+                        pushed += ', 0 0 20px ' + press_color
+                        pushed += ', 0 0 10px ' + press_color
+                        pushed += ', 0 0 40px ' + press_color
+                        pushed += ', 0 0 60px ' + press_color
+                        $('#btn'+btn).css('box-shadow', pushed)
+                        $('#btn'+btn).css('background', press_color)
+                    }else{
+                        $('#btn'+btn).css('box-shadow', 'none')
+                        $('#btn'+btn).css('background', bg_keys_off)
+                    }
+                  }else if (e.type == 'release'){
+                    $('release').html(e.value)
+                  }else if (e.type == 'release_eachkey'){
+                    var btn = e.button+1
+                    last_release[btn] = Number(e.value)
+                    if (disp_release_each_key == 1){
+                        if (release_eachkey_int == 1){
+                            $('#btn'+btn).text(Math.round(e.value))
+                        }else{
+                            $('#btn'+btn).text(e.value)
+                        }
+                    }
+                    if (last_release[btn] <= threshold_release_low){
+                        $('#btn'+btn).css('outline', outline_release_low)
+                        $('#btn'+btn).css('color', color_release_eachkey_low)
+                    }else if (last_release[btn] <= threshold_release_high){
+                        $('#btn'+btn).css('outline', outline_release_mid)
+                        $('#btn'+btn).css('color', color_release_eachkey_mid)
+                    }else{
+                        $('#btn'+btn).css('outline', outline_release_high)
+                        $('#btn'+btn).css('color', color_release_eachkey_high)
+                    }
+                  }else if (e.type == 'density'){
+                    $('density').html(e.value)
+                  }else if (e.type == 'notes'){
+                    $('notes').html(e.value)
+                  }
+                  // axisイベントはpop'nでは発生しないため処理しない
+                })
+            } catch (e) {
+                console.error('データ解析エラー:', e)
+            }
+        }
+        function onClose(event) {
+            console.log('切断されました')
+            $('warning').html('Not Connected!!');
+            ws = null;
+            setTimeout("open()", 3000);
+        }
+
+        $(init);
+    </script>
+</body>
+</html>
