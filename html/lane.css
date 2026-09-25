@@ -46,6 +46,17 @@
     --note-popn-green: rgba(76, 200, 76, 0.98);
     --note-popn-blue: rgba(70, 135, 255, 0.98);
     --note-popn-red: rgba(255, 70, 70, 0.98);
+    /* SDVX BTノーツ */
+    --note-sdvx-bt: rgba(245, 245, 245, 0.98);
+    /* SDVX FXノーツ(BTの奥に重なるため少し透過) */
+    --note-sdvx-fx: rgba(255, 140, 20, 0.8);
+    /* SDVX つまみ(VOL-L=青, VOL-R=赤紫) */
+    --note-sdvx-vol-l: rgba(40, 190, 255, 0.98);
+    --note-sdvx-vol-r: rgba(255, 60, 180, 0.98);
+
+    /* ===== SDVX つまみレーン ===== */
+    /* つまみ片方向(左回転/右回転)1本ぶんの幅 */
+    --lane-knob-width: 32px;
 }
 
 html {
@@ -95,6 +106,36 @@ body {
 /* 皿レーンは少し幅広 */
 .lane.scratch {
     width: var(--lane-scratch-width);
+}
+
+/* つまみレーン(左回転/右回転を1組にして隙間なく並べる) */
+.lane.knob {
+    width: var(--lane-knob-width);
+}
+
+.lane-group {
+    display: flex;
+    gap: 0;
+}
+
+/* 他レーンの範囲に重ねるレーン(SDVXのFX)。位置と大きさはlane.jsが設定する */
+.lanes {
+    position: relative;
+}
+
+.lane {
+    z-index: 1;
+}
+
+.lane.overlay {
+    position: absolute;
+    z-index: 0;
+    background: transparent;
+    border: none;
+}
+
+.lane.overlay::after {
+    display: none;
 }
 
 /* レーン間の余白(DP中央など)。flexのgap分を差し引いた幅にする */
