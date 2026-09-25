@@ -5,6 +5,7 @@
     <title>Scratch Speed Viewer</title>
     <link rel="stylesheet" type="text/css" href="property.css" />
     <link rel="stylesheet" type="text/css" href="websocket.css" />
+    <script src="connection.js"></script>
     <style>
         html, body {
             height: 100%;
@@ -98,11 +99,17 @@
         var ws = null;
         function open() {
             if (ws != null) return;
-            var host = getComputedStyle(document.documentElement).getPropertyValue('--host').trim().replace(/['"]/g, '');
-            var port = getComputedStyle(document.documentElement).getPropertyValue('--port').trim();
-            var url  = 'ws://' + host + ':' + port;
-            console.log('WebSocket URL: ' + url);
-            ws = new WebSocket(url);
+            try {
+                var url = oivWebSocketUrl();
+                console.log('WebSocket URL: ' + url);
+                ws = new WebSocket(url);
+            } catch (e) {
+                // URL不正などで例外になるとoncloseが呼ばれず再接続されないため、ここで再試行する
+                console.error(e);
+                ws = null;
+                setTimeout(open, 3000);
+                return;
+            }
             ws.onmessage = onMessage;
             ws.onclose   = onClose;
         }
