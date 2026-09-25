@@ -503,20 +503,12 @@ class JoystickWebSocketServer(QMainWindow):
             cur_time = time.perf_counter()
             if cur_time - time_last_sent > self.settings.density_interval:  # 各種出力
                 if len(self.list_density) > 0:  # 密度の出力
-                    if (
-                        cur_time - self.list_density[-1]
-                        > self.settings.density_interval
-                    ):
-                        self.list_density = []
-                    for i in range(len(self.list_density)):
-                        if (
-                            cur_time - self.list_density[i]
-                            <= self.settings.density_interval
-                        ):
-                            break
-                    self.list_density = self.list_density[
-                        i:
-                    ]  # 直近5秒以内の範囲だけに整形
+                    # 直近density_interval秒以内の範囲だけに整形
+                    self.list_density = [
+                        t
+                        for t in self.list_density
+                        if cur_time - t <= self.settings.density_interval
+                    ]
                     if (len(self.list_density) == 0) or (
                         cur_time == self.list_density[0]
                     ):
