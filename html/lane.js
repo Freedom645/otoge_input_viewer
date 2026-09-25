@@ -4,8 +4,16 @@
 // LANE_CONFIG = {
 //   lanes: [ { key:'s0', kind:'scratch', colorVar:'--note-iidx-scratch' },
 //            { key:'k0_0', kind:'key',     colorVar:'--note-iidx-white' }, ... ],
-//   scratchTimeout: 120,          // 皿がこのms間動かなければノーツを離す
+//   scratchTimeout: 120,          // 皿/つまみがこのms間動かなければノーツを離す
 // }
+//
+// その他のレーン定義:
+//   { kind:'spacer' }                         レーン間の余白
+//   { kind:'group', lanes:[...] }             子レーンを隙間なく並べる(SDVXのつまみ左右回転など)
+//   { key, kind:'knob', colorVar }            つまみの片方向。keyは 'v<axis>_<direction>'
+//   { key, kind:'key', colorVar, overlay:['k0_1','k0_2'] }
+//        指定した2レーンの範囲に重ねて表示するレーン(SDVXのFXなど)。
+//        通常レーンより奥に描画され、通常レーンのノーツが手前に来る。
 //
 // 皿(スクラッチ)は「前方回転 / 後方回転 / 静止」の3状態しか持たない。
 // サーバは値が変化した瞬間だけ axis イベント(direction=1:前方, 0:後方)を送り、
@@ -27,10 +35,18 @@
   }
 
   // ===== レーンDOMの構築 =====
+  var overlays = []; // { el, from, to } 他レーンの範囲に重ねるレーン
+
   function buildLanes() {
     var container = document.querySelector(".lanes");
     if (!container) return;
-    config.lanes.forEach(function (def) {
+    appendLanes(container, config.lanes);
+    layoutOverlays();
+    window.addEventListener("resize", layoutOverlays);
+  }
+
+  function appendLanes(container, defs) {
+    defs.forEach(function (def) {
       if (def.kind === "spacer") {
         // レーン間の余白(DP中央など)
         var sp = document.createElement("div");
@@ -38,12 +54,26 @@
         container.appendChild(sp);
         return;
       }
+      if (def.kind === "group") {
+        // 子レーンを隙間なく1まとまりで並べる
+        var group = document.createElement("div");
+        group.className = "lane-group";
+        container.appendChild(group);
+        appendLanes(group, def.lanes || []);
+        return;
+      }
       var lane = document.createElement("div");
-      lane.className = "lane" + (def.kind === "scratch" ? " scratch" : "");
+      lane.className = "lane";
+      if (def.kind === "scratch") lane.className += " scratch";
+      if (def.kind === "knob") lane.className += " knob";
+      if (def.overlay) lane.className += " overlay";
       lane.dataset.key = def.key;
       var color = rootStyle.getPropertyValue(def.colorVar).trim();
       lane.style.setProperty("--note-color", color);
       container.appendChild(lane);
+      if (def.overlay) {
+        overlays.push({ el: lane, from: def.overlay[0], to: def.overlay[1] });
+      }
       lanes[def.key] = {
         el: lane,
         kind: def.kind,
@@ -52,6 +82,23 @@
         lastSeen: 0,
         lastDir: -1, // 直近に確定した皿の回転方向(1:前方, 0:後方, -1:未確定/静止)
       };
+    });
+  }
+
+  // 重ね表示レーンを、指定した2レーンの左端〜右端に合わせて配置する
+  function layoutOverlays() {
+    overlays.forEach(function (ov) {
+      var from = lanes[ov.from];
+      var to = lanes[ov.to];
+      if (!from || !to) return;
+      var parent = ov.el.offsetParent || ov.el.parentNode;
+      var base = parent.getBoundingClientRect();
+      var a = from.el.getBoundingClientRect();
+      var b = to.el.getBoundingClientRect();
+      ov.el.style.left = a.left - base.left + "px";
+      ov.el.style.top = a.top - base.top + "px";
+      ov.el.style.width = b.right - a.left + "px";
+      ov.el.style.height = a.height + "px";
     });
   }
 
@@ -114,7 +161,7 @@
     var now = performance.now();
     for (var key in lanes) {
       var lane = lanes[key];
-      if (lane.kind !== "scratch") continue;
+      if (lane.kind !== "scratch" && lane.kind !== "knob") continue;
       if (lane.activeNote && now - lane.lastSeen > scratchTimeout) {
         releaseLane(key, now);
         lane.lastDir = -1; // 静止 → 回転方向は未確定に戻す
@@ -146,6 +193,17 @@
           var key = "k" + side + "_" + e.button;
           if (e.state === "down") pressLane(key, now);
           else releaseLane(key, now);
+        } else if (e.type === "axis" && lanes["v" + e.axis + "_0"]) {
+          // つまみ(SDVX): 回転方向ごとのレーンを押下し、逆方向は即座に離す
+          var d = e.direction;
+          if (e.value === 0) {
+            // キー割り当てボタンを離した → 両方向とも離す
+            releaseLane("v" + e.axis + "_0", now);
+            releaseLane("v" + e.axis + "_1", now);
+          } else if (d === 0 || d === 1) {
+            releaseLane("v" + e.axis + "_" + (1 - d), now);
+            pressLane("v" + e.axis + "_" + d, now);
+          }
         } else if (e.type === "axis") {
           var s = "s" + (e.controller_side || 0);
           var scr = lanes[s];

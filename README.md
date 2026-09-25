@@ -57,6 +57,7 @@ This tool is inspired from [dakendisplay tool](https://rag-oji.com/dakendisplay/
 |html/iidx_2p_lane.html|640×620|IIDX 2P、レーン型(ロングノーツ風)表示|
 |html/iidx_dp_lane.html|1200×620|IIDX DP、レーン型(ロングノーツ風)表示|
 |html/popn_lane.html|760×620|pop'n music、レーン型(ロングノーツ風)表示|
+|html/sdvx_lane.html|640×620|SDVX、レーン型(ロングノーツ風)表示(FXはBTの奥に重ねて表示、つまみは左回転/右回転で2分割)|
 
 レーン型表示は、各音ゲーのプレイ画面のレーン配置を模し、
 入力に応じて実際の譜面のようにノーツが上から下へ流れます。

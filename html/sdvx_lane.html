@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <title>Otoge Input Viewer(SDVX レーン)</title>
+    <link rel="stylesheet" type="text/css" href="property.css" />
+    <link rel="stylesheet" type="text/css" href="lane.css" />
+    <link rel="stylesheet" type="text/css" href="websocket.css" /> <!-- websocketのポートを変更する場合はここに書く。cssが存在しない場合はデフォ(8765) -->
+</head>
+<body>
+    <warning>Not Connected!!</warning>
+    <div class="background">
+        <!-- レーンはlane.jsがLANE_CONFIGから生成する -->
+        <div class="lanes"></div>
+        <table class="info">
+            <tr>
+                <td><release></release></td><td>ms</td>
+                <td><density></density></td><td>n/s</td>
+                <td><notes></notes></td>
+            </tr>
+        </table>
+    </div>
+
+    <script>
+        // 左から: VOL-L(左回転,右回転), BT-A, BT-B, BT-C, BT-D, VOL-R(左回転,右回転)
+        // FX-LはBT-A～B、FX-RはBT-C～Dの範囲にBTの奥へ重ねて表示する
+        window.LANE_CONFIG = {
+            scratchTimeout: 120,
+            lanes: [
+                { kind: 'group', lanes: [
+                    { key: 'v0_0', kind: 'knob', colorVar: '--note-sdvx-vol-l' },
+                    { key: 'v0_1', kind: 'knob', colorVar: '--note-sdvx-vol-l' }
+                ] },
+                { key: 'k0_1', kind: 'key', colorVar: '--note-sdvx-bt' },
+                { key: 'k0_2', kind: 'key', colorVar: '--note-sdvx-bt' },
+                { key: 'k0_3', kind: 'key', colorVar: '--note-sdvx-bt' },
+                { key: 'k0_4', kind: 'key', colorVar: '--note-sdvx-bt' },
+                { kind: 'group', lanes: [
+                    { key: 'v1_0', kind: 'knob', colorVar: '--note-sdvx-vol-r' },
+                    { key: 'v1_1', kind: 'knob', colorVar: '--note-sdvx-vol-r' }
+                ] },
+                { key: 'k0_5', kind: 'key', colorVar: '--note-sdvx-fx', overlay: ['k0_1', 'k0_2'] },
+                { key: 'k0_6', kind: 'key', colorVar: '--note-sdvx-fx', overlay: ['k0_3', 'k0_4'] }
+            ]
+        };
+    </script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="lane.js"></script>
+</body>
+</html>
